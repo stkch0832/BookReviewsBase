@@ -1,0 +1,46 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="">Book Reviews Base</a>
+        <ul class="navbar-nav ml-auto">
+
+            {% if user.is_authenticated %}
+            <li class="nav-item">
+                <span class="nav-link">ユーザーさん</span>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="">about</a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    ユーザー設定
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <li><a class="dropdown-item" href="" aria-label="">プロフィール</a></li>
+                    <li><a class="dropdown-item" href="">投稿一覧</a></li>
+                    <li><a class="dropdown-item" href="">メールアドレス変更</a></li>
+                    <li><a class="dropdown-item" href="">パスワード変更</a></li>
+                    <li><a class="dropdown-item" href="">退会</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'account_logout' %}">ログアウト</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <span class="nav-link">ゲストさん</span>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="">about</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'account_signup' %}">ユーザー登録</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'account_login' %}">ログイン</a>
+            </li>
+            {% endif %}
+
+        </ul>
+    </div>
+</nav>

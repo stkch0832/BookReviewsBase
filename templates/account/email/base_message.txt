@@ -1,0 +1,4 @@
+{% load i18n %}
+{% autoescape off %}{% blocktrans with site_name=current_site.name %}「{{ site_name }}」へ ようこそ！{% endblocktrans %}
+{% block content %}{% endblock content %}
+{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}発行元:「{{ site_name }}」運営事務局{% endblocktrans %}{% endautoescape %}

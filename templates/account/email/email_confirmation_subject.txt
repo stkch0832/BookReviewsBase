@@ -1,0 +1,6 @@
+{% load i18n %}
+{% autoescape off %}
+{% blocktrans %}
+[{{ site_name }}]本登録URLのご案内
+{% endblocktrans %}
+{% endautoescape %}
