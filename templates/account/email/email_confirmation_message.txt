@@ -1,0 +1,20 @@
+{% extends "account/email/base_message.txt" %}
+{% load account %}
+{% load i18n %}
+
+{% block content %}
+{% autoescape off %}{% user_display user as user_display %}{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}仮登録手続きが完了しました。
+
+「{{ site_name }}」にご登録いただきありがとうございます。
+下記のURLへ48時間以内にアクセスすることで本登録が完了します。
+
+{{ activate_url }}
+
+上記URLの有効期間は48時間です。
+
+有効期間内に本登録を完了されなかった場合、
+再度ご登録いただく必要がございますのでご注意ください。
+
+登録した覚えがないのに本メールを受け取られた方は、
+お手数ですがこのメールを削除してください。{% endblocktrans %}{% endautoescape %}
+{% endblock content %}
