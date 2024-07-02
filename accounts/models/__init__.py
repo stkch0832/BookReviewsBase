@@ -1,1 +1,2 @@
-from .user_model import *
+from .user_models import *
+from .profile_models import *

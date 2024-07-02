@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+プロフィール
+{% endblock %}
+
+{% block content %}
+
+<h2>プロフィール</h2>
+{% if profile.image %}
+<img src="{{ profile.image.url }}" alt="" style="width: 100px; height: 100px">
+{% else %}
+<img src="{% static 'accounts/user_image/default_image.jpeg' %}" alt="" style="width: 100px; height: 100px">
+{% endif %}
+
+<form action="{% url 'accounts:profile_edit' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="error">
+        <ul>
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% for field in form %}
+        {% if field.name != 'image' %}
+            <div>
+                <label for="{{ field.id_for_label }}">
+                    {{ field.label }}:
+                </label><br>
+                {% if field.help_text %}
+                {% for help_text in field.help_text %}
+                <span>※{{ help_text }}</span><br>
+                {% endfor %}
+                {% endif %}
+                {{ field }}
+                {% if field.errors %}
+                <div class="error">
+                    {% for error in field.errors %}
+                    <p class="text-danger">※{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        {% else %}
+        <div>
+            <label for="{{ field.id_for_label }}">{{ field.label }}:</label><br>
+            <input type="file" name="{{ field.name }}" class="form-control mb-3" id="{{ field.id_for_label }}">
+            {% if field.errors %}
+            <div class="error">
+                {% for error in field.errors %}
+                <p class="text-danger">※{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% endfor %}
+
+
+
+    <button type="submit" class="btn btn-primary">更新</button>
+    <a href="{% url 'accounts:accounts_home' %}" class="btn btn-secondary">戻る</a>
+</form>
+
+{% endblock %}
