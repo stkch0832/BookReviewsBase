@@ -81,11 +81,13 @@ INSTALLED_APPS = [
 
     # Application
     'accounts',
+    'accounts.apps',
 
     # library
     'allauth',
     'allauth.account',
     'django.contrib.sites',
+    'django_cleanup',
 ]
 
 MIDDLEWARE = [
@@ -221,10 +223,10 @@ ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 ACCOUNT_FORMS = {
-    'signup': 'accounts.forms.user_form.CustomSignupForm',
-    'login': 'accounts.forms.user_form.CustomLoginForm',
-    'reset_password': 'accounts.forms.user_form.CustomResetPasswordForm',
-    'reset_password_from_key': 'accounts.forms.user_form.CustomResetPasswordKeyForm',
-    'change_password': 'accounts.forms.user_form.CustomChangePasswordForm',
-    'set_password': 'accounts.forms.user_form.CustomSetPasswordForm',
+    'signup': 'accounts.forms.user_forms.CustomSignupForm',
+    'login': 'accounts.forms.user_forms.CustomLoginForm',
+    'reset_password': 'accounts.forms.user_forms.CustomResetPasswordForm',
+    'reset_password_from_key': 'accounts.forms.user_forms.CustomResetPasswordKeyForm',
+    'change_password': 'accounts.forms.user_forms.CustomChangePasswordForm',
+    'set_password': 'accounts.forms.user_forms.CustomSetPasswordForm',
 }

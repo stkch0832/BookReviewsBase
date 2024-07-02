@@ -1,4 +1,4 @@
-from accounts.forms.user_form import (
+from accounts.forms.user_forms import (
     CustomSignupForm,
     CustomLoginForm,
     )
