@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}
+
+{% endblock %}
+
+
+
+{% block content %}
+{% if 'new' in request.path %}
+新規投稿作成
+{% else %}
+投稿編集
+{% endif %}
+
+<div class="w-50">
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="row">
+            {% if 'new' in request.path %}
+            <div class="col-3">
+                <img src="{{ book_data.image }}" alt="">
+            </div>
+            {% endif %}
+            <div class="col">
+                <div class="form-group">
+                    {{ form.book_title_display.label_tag }}
+                    {{ form.book_title_display }}
+                </div>
+                <div class="form-group">
+                    {{ form.author_display.label_tag }}
+                    {{ form.author_display }}
+                </div>
+                <div class="form-group">
+                    {{ form.isbn_display.label_tag }}
+                    {{ form.isbn_display }}
+                </div>
+            </div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="error">
+            <ul>
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+
+        <div class="form-group">
+            {{ form.post_title.label_tag }}
+            {{ form.post_title }}
+        </div>
+        <div class="form-group">
+            {{ form.reason.label_tag }}
+            {{ form.reason }}
+        </div>
+        <div class="form-group">
+            {{ form.impressions.label_tag }}
+            {{ form.impressions }}
+        </div>
+        <div class="form-group">
+            {{ form.satisfaction.label_tag }}
+            {{ form.satisfaction }}
+        </div>
+
+
+        <input type="hidden" name="book_title" value="{{ book_data.title }}">
+        <input type="hidden" name="author" value="{{ book_data.author }}">
+        <input type="hidden" name="isbn" value="{{ book_data.isbn }}">
+
+        <button type="submit" class="btn btn-primary">
+            {% if 'new' in request.path %}
+            新規投稿
+            {% else %}
+            更新
+            {% endif %}
+        </button>
+
+        <a href="{% url 'app:post_list' %}" class="btn btn-secondary">キャンセル</a>
+    </form>
+</div>
+
+{% endblock %}

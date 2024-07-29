@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}
+投稿詳細
+{% endblock %}
+
+{% block content %}
+投稿詳細
+
+<div class="d-flex">
+    <div class="">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#openModal">本の情報を見る</button>
+        <a href="{% url 'app:post_list' %}" class="btn btn-secondary">戻る</a>
+    </div>
+
+    {% if post_data.user == request.user %}
+    <form action="{% url 'app:post_delete' post_data.pk %}" method="post">
+        {% csrf_token %}
+        <a href="{% url 'app:post_edit' post_data.pk %}" class="btn btn-primary">編集</a>
+        <button type="submit" class="btn btn-danger" onclick="return confirm('この投稿を削除してもよろしいでしょうか？')">削除</button>
+    </form>
+    {% endif %}
+</div>
+
+{% if error_message %}
+<p>{{ error_message }}</p>
+{% endif %}
+
+<p>{{ post_data.book_title }}</p>
+<p>{{ post_data.post_title }}</p>
+<p>{{ post_data.reason }}</p>
+<p>{{ post_data.impressions }}</p>
+<p>{{ post_data.satisfaction }}</p>
+
+
+<div class="modal" tabindex="-1" id="openModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">本の情報</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img src="{{ book_data.image }}" alt="">
+                <p>{{ book_data.title }}</p>
+                <p>{{ book_data.author }}</p>
+                <p>{{ book_data.salesDate }}</p>
+                <p>{{ book_data.publisherName }}</p>
+                <p>{{ book_data.size }}</p>
+                <p>{{ book_data.itemCaption }}</p>
+
+                <p>{{ book_data.reviewAverage }}</p>
+                <p>{{ book_data.reviewCount }}</p>
+                <a href="{{ book_data.itemUrl }}" target="_blank">販売ページを開く</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
