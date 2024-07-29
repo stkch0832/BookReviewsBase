@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+Book Reviews Base
+{% endblock %}
+
+{% block content %}
+<h2>ホーム</h2>
+
+
+{% for post in posts %}
+<a href="{% url 'app:post_detail' pk=post.id %}">
+<div class="row border">
+        <div class="col-1">
+            {% if post.user.profile.image %}
+            <img src="{{ post.user.profile.image.url }}" class="card-img-top" alt="" style="width: 100px; height: 100px">
+            {% else %}
+            <img src="{% static 'accounts/user_image/default_image.jpeg' %}" class="card-img-top" alt=""
+            style="width: 100px; height: 100px">
+            {% endif %}
+        </div>
+        <div class="col-2">
+            <p>{{ post.user.profile.name }}</p>
+            <p>{{ post.user.profile.username }}</p>
+        </div>
+        <div class="col-3">
+            <p>{{ post.post_title }}</p>
+            <p>{{ post.satisfaction }}</p>
+        </div>
+        <div class="col-4">
+            <p>{{ post.book_title }}</p>
+        </div>
+        <div class="col-2">
+            <p>
+                {{ post.created_at | date:"Y/m/d H:i" }}
+            </p>
+        </div>
+    </div>
+</a>
+{% endfor %}
+
+<nav aria-label="Page navigation">
+    {% if page_obj.has_other_pages %}
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page=1">最初</a></li>
+        {% else %}
+        <li class="page-item disable"><span class="page-link text-secondary">最初</span></li>
+        {% endif %}
+
+        {% if page_obj.number|add:'-2' > 1 %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.number|add:'-2' }}">&hellip;</a></li>
+        {% endif %}
+
+        {% for i in page_obj.paginator.page_range %}
+        {% if page_obj.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}<span class="visually-hidden"></span></li>
+        {% elif i > page_obj.number|add:'-2' and i < page_obj.number|add:'2' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.paginator.num_pages > page_obj.number|add:'2' %}
+        <li><a class="page-link" href="?page={{ page_obj.number|add:'2' }}">&hellip;</a></li>
+        <li><a href="?page={{ i }}">{{ i }}</a></li>
+        <li><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a></li>
+        {% endif %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">最後</a></li>
+        {% else %}
+        <li class="page-item disable"><span class="page-link text-secondary">最後</span></li>
+        {% endif %}
+    </ul>
+    {% endif %}
+</nav>
+
+{% endblock %}

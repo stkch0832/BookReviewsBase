@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}
+検索結果
+{% endblock %}
+
+{% block content %}
+<h3>{{ search_words }}の検索結果</h3>
+
+<div class="row">
+    {% for book in book_data %}
+
+    <div class="col-4">
+        <div class="card">
+            <img src="{{ book.image }}" alt="{{ book.image }}" class="card-img-top">
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">{{ book.title }}</h5>
+            <a href="{% url 'app:post_new' book.isbn %}" class="btn btn-primary">この本のレビューを投稿する</a>
+        </div>
+    </div>
+    {% empty %}
+    <p>該当するものがありません</p>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

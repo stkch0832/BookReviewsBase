@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}
+書籍検索
+{% endblock %}
+
+{% block content %}
+書籍検索
+
+<form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="error">
+        <ul>
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    {% if none_item %}
+    <p>{{ none_item }}</p>
+    {% endif %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">検索</button>
+</form>
+
+
+{% endblock %}

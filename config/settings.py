@@ -68,6 +68,8 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
 
+# API
+API_KEY = os.getenv('API_KEY')
 
 # Application definition
 
@@ -82,6 +84,7 @@ INSTALLED_APPS = [
     # Application
     'accounts',
     'accounts.apps',
+    'app',
 
     # library
     'allauth',
@@ -114,6 +117,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # add
+                'app.context_processors.common'
             ],
         },
     },
@@ -218,7 +223,7 @@ ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 2
 
 LOGIN_ON_EMAIL_CONFIRMATION = True
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/accounts/'
+LOGIN_REDIRECT_URL = '/bookreviewsbase/'
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 

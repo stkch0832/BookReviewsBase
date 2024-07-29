@@ -82,7 +82,7 @@ class LoginViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, settings.LOGIN_REDIRECT_URL)
         response = self.client.get(settings.LOGIN_REDIRECT_URL)
-        self.assertTemplateUsed(response, 'home.html')
+        self.assertTemplateUsed(response, 'index.html')
 
 class ProfileDetailViewTests(TestCase):
     @classmethod
