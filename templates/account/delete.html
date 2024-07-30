@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+プロフィール
+{% endblock %}
+
+{% block content %}
+
+<h2>アカウント削除</h2>
+
+<form action="{% url 'accounts:accounts_delete' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger" onclick="return confirm('アカウント削除した場合、データの復元はできません。\n本当に削除してもよろしいでしょうか？')">アカウント削除</button>
+</form>
+
+{% endblock %}
