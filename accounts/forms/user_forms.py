@@ -5,6 +5,7 @@ from allauth.account.forms import (
     ResetPasswordKeyForm,
     ChangePasswordForm,
     SetPasswordForm,
+    AddEmailForm,
 )
 from django import forms
 from django.contrib.auth import get_user_model
@@ -91,6 +92,18 @@ class CustomSetPasswordForm(SetPasswordForm):
 
     def __init__(self, *args, **kwargs):
         super(CustomSetPasswordForm, self).__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+
+        for field in self.fields.values():
+            field.widget.attrs['placeholder'] = ''
+
+
+class CustomAddEmailForm(AddEmailForm):
+
+    def __init__(self, *args, **kwargs):
+        super(CustomAddEmailForm, self).__init__(*args, **kwargs)
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'

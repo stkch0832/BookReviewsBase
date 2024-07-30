@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from accounts.models.profile_models import Profile
@@ -9,6 +9,7 @@ import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 from django.contrib.messages import get_messages
+from app.models.post_models import Post
 
 
 User = get_user_model()
@@ -306,3 +307,61 @@ class ProfileUpdateViewTests(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(messages[0].tags, 'alert alert-danger')
         self.assertEqual(messages[0].message, "プロフィールの更新に失敗しました")
+
+
+class AccountDeleteViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='test@test.com',
+            password='test0000'
+            )
+        self.profile = Profile.objects.get(user=self.user)
+        self.post = Post.objects.create(
+            user=self.user,
+            post_title='Test Post',
+            reason='Test Reason',
+            impressions='Test Impressions',
+            satisfaction=5,
+            book_title='Test Book Title',
+            author='Test Author',
+            isbn='1234567890123'
+            )
+
+        self.client = Client()
+        self.client.login(
+            email='test@test.com',
+            password='test0000'
+            )
+
+    def test_71_logged_in_user_delete_self_account_success(self):
+        """
+        ログインしたユーザーにて、アカウントを削除した場合、User, Profile, Postの各データが削除されたかを確認
+        """
+        response = self.client.post(reverse('accounts:accounts_delete'))
+        self.assertRedirects(response, reverse('app:post_list'))
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(str(messages[0]), 'アカウントを削除しました。ご利用いただきありがとうございました。')
+
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(email='test@test.com')
+
+        with self.assertRaises(Profile.DoesNotExist):
+            Profile.objects.get(user=self.user)
+
+        with self.assertRaises(Post.DoesNotExist):
+            Post.objects.get(user=self.user)
+
+    def test_72_logged_in_user_delete_account_failed(self):
+        """
+        ログインをしていないユーザーにて、アクセスした場合
+        """
+        self.client.logout()
+        response = self.client.post(reverse('accounts:accounts_delete'))
+        self.assertRedirects(response, f"{reverse('account_login')}?next={reverse('accounts:accounts_delete')}")
+
+
+    def tearDown(self):
+        self.user.delete()
+        self.profile.delete()
+        self.post.delete()

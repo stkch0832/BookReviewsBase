@@ -234,4 +234,6 @@ ACCOUNT_FORMS = {
     'reset_password_from_key': 'accounts.forms.user_forms.CustomResetPasswordKeyForm',
     'change_password': 'accounts.forms.user_forms.CustomChangePasswordForm',
     'set_password': 'accounts.forms.user_forms.CustomSetPasswordForm',
+    'set_password': 'accounts.forms.user_forms.CustomSetPasswordForm',
+    'add_email': 'accounts.forms.user_forms.CustomAddEmailForm',
 }
