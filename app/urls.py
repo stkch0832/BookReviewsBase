@@ -9,7 +9,6 @@ from app.views.post_views import (
 )
 from app.views.book_views import (
     BookSearchView,
-    BookDetailView,
 )
 
 app_name = 'app'
@@ -24,6 +23,5 @@ urlpatterns = [
 
 
     path('book/search/', BookSearchView.as_view(), name='book_search'),
-    path('book/<str:isbn>/', BookDetailView.as_view(), name='book_detail'),
 
     ]
