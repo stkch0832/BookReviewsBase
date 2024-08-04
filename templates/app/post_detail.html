@@ -7,13 +7,8 @@
 {% block content %}
 投稿詳細
 
-<div class="d-flex">
-    <div class="">
-        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#openModal">本の情報を見る</button>
-        <a href="{% url 'app:post_list' %}" class="btn btn-secondary">戻る</a>
-    </div>
 
-    {% if post_data.user == request.user %}
+{% if post_data.user == request.user %}
     <form action="{% url 'app:post_delete' post_data.pk %}" method="post">
         {% csrf_token %}
         <a href="{% url 'app:post_edit' post_data.pk %}" class="btn btn-primary">編集</a>
@@ -33,6 +28,17 @@
 <p>{{ post_data.satisfaction }}</p>
 
 
+<div class="d-flex">
+    <div class="">
+        {% if post_data.user != request.user %}
+        {% endif %}
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#openModal">本の情報を見る</button>
+        <a href="{% url 'accounts:profile_detail' post_data.user.profile.username %}" class="btn btn-primary">投稿者プロフィール</a>
+        <a href="{% url 'app:post_list' %}" class="btn btn-secondary">ホームに戻る</a>
+    </div>
+
+
+<!-- modal -->
 <div class="modal" tabindex="-1" id="openModal">
     <div class="modal-dialog">
         <div class="modal-content">

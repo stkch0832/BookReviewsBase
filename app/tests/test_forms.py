@@ -2,7 +2,6 @@ from django.test import TestCase
 from app.forms.book_forms import BookSearchForm
 from app.forms.post_forms import PostForm, SATISFACTION_CHOICES
 from django.contrib.auth import get_user_model
-from app.models.post_models import Post
 
 
 User = get_user_model()
@@ -110,4 +109,3 @@ class PostFormTests(TestCase):
         self.assertIn('reason', form.errors)
         self.assertIn('impressions', form.errors)
         self.assertIn('satisfaction', form.errors)
-

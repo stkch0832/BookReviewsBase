@@ -3,57 +3,63 @@
 {% load static %}
 
 {% block title %}
-Book Reviews Base
+プロフィール
 {% endblock %}
 
 {% block content %}
 
-{% if 'posts' in request.path %}
-<h2>{{ profile_data.name }}の投稿一覧</h2>
-<p>投稿数：{{ posts | length }}</p>
-{% endif %}
 
-{% for post in posts %}
-<div class="row border">
-    <div class="col-3">
-        <a href="{% url 'accounts:profile_detail' post.user.profile.username %}">
-            <div class="row border">
-                <div class="col-6">
-                    {% if post.user.profile.image %}
-                    <img src="{{ post.user.profile.image.url }}" class="card-img-top" alt=""
-                        style="width: 100px; height: 100px">
-                    {% else %}
-                    <img src="{% static 'accounts/user_image/default_image.jpeg' %}" class="card-img-top" alt=""
-                        style="width: 100px; height: 100px">
-                    {% endif %}
-                </div>
-                <div class="col-6">
-                    <p>{{ post.user.profile.name }}</p>
-                    <p>コメント数：</p>
-                </div>
-            </div>
-        </a>
+<h2>{{ profile.name }} のプロフィール</h2>
+
+<div class="border">
+    <div class="row">
+        <div class="col-3">
+            {% if profile.image %}
+            <img src="{{ profile.image.url }}" alt="" style="width: 100px; height: 100px">
+            {% else %}
+            <img src="{% static 'accounts/user_image/default_image.jpeg' %}" alt="" style="width: 100px; height: 100px">
+            {% endif %}
+        </div>
+        <div class="col-9">
+            <span>自己紹介：</span>
+            <p>{{ profile.introduction | linebreaksbr }}</p>
+        </div>
     </div>
-    <div class="col-9">
-        <a href="{% url 'app:post_detail' pk=post.id %}">
-            <div class="row">
-                <div class="col-4">
-                    <p>{{ post.post_title }}</p>
-                    <p>{{ post.satisfaction }}</p>
-                </div>
-                <div class="col-4">
-                    <p>{{ post.book_title }}</p>
-                </div>
-                <div class="col-4">
-                    <p>
-                        {{ post.created_at | date:"Y/m/d H:i" }}
-                    </p>
-                </div>
-            </div>
-        </a>
+    <div class="row">
+        <div class="col">
+            <p>投稿数：{{ posts | length }}</p>
+            <p>コメント数：</p>
+        </div>
+        <div class="col">
+            <p>年齢：{{ profile.age | default_if_none:"未設定" }}</p>
+            <p>性別：{{ profile.get_bio_display }}</p>
+        </div>
+        <div class="col">
+            <p>勤務地：{{ profile.get_workplace_display | default_if_none:"未設定" }}</p>
+            <p>職業：{{ profile.get_occapation_display | default_if_none:"未設定" }}</p>
+        </div>
+        <div class="col">
+            <p>業種：{{ profile.get_industry_display | default_if_none:"未設定" }}</p>
+            <p>職種：{{ profile.get_position_display | default_if_none:"未設定" }}</p>
+        </div>
     </div>
+
+
 </div>
-{% endfor %}
+
+
+<div class="">
+    {% for post in page_obj %}
+    <a href="{% url 'app:post_detail' post.id %}">
+        <div class="row border">
+            <div class="col-3">{{ post.book_title }}</div>
+            <div class="col-3">{{ post.satisfaction }}</div>
+            <div class="col-3">{{ post.post_title }}</div>
+            <div class="col-3">{{ post.created_at | date:"Y/m/d H:i" }}</div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
 
 <nav aria-label="Page navigation">
     {% if page_obj.has_other_pages %}
@@ -91,5 +97,7 @@ Book Reviews Base
     </ul>
     {% endif %}
 </nav>
+
+
 
 {% endblock %}

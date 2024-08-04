@@ -4,6 +4,7 @@ import os, random, string
 from django.core.validators import RegexValidator
 from django.core.validators import MinLengthValidator
 from datetime import date
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -173,7 +174,7 @@ class Profile(models.Model):
         max_length=30,
         default='名無し',
     )
-    introduction = models.CharField(
+    introduction = models.TextField(
         verbose_name="自己紹介",
         max_length=255,
         null=True,
@@ -229,6 +230,11 @@ class Profile(models.Model):
         verbose_name="更新日時",
         auto_now=True,
     )
+
+    def clean(self):
+        super().clean()
+        if self.introduction and len(self.introduction) > 255:
+            raise ValidationError("255文字以内で入力してください。")
 
     def save(self, *args, **kwargs):
         if self.birth:
