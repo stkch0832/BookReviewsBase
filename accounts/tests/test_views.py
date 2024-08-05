@@ -128,7 +128,7 @@ class ProfileDetailViewTests(TestCase):
             )
         self.assertEqual(response.status_code, 404)
 
-    def test_74_profile_detail_view_pagination(self):
+    def test_73_profile_detail_view_pagination(self):
         """
         ページネーションの設定確認
         """
@@ -150,7 +150,7 @@ class ProfileDetailViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['page_obj']), 3)
 
-    def test_75_profile_detail_view_pagination_invalid_page(self):
+    def test_74_profile_detail_view_pagination_invalid_page(self):
         """
         範囲外のページが指定された場合、最後のページに移動するか確認
         """
@@ -291,7 +291,7 @@ class AccountDeleteViewTests(TestCase):
         with self.assertRaises(Post.DoesNotExist):
             Post.objects.get(user=self.user)
 
-    def test_72_logged_in_user_delete_account_failed(self):
+    def test_72_not_logged_in_user_delete_account_failed(self):
         """
         ログインをしていないユーザーにて、アクセスした場合
         """

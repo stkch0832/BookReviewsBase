@@ -2,6 +2,8 @@ from django.test import TestCase
 from app.forms.book_forms import BookSearchForm
 from app.forms.post_forms import PostForm, SATISFACTION_CHOICES
 from django.contrib.auth import get_user_model
+from app.forms.comment_forms import CommentForm
+from app.models.post_models import Post
 
 
 User = get_user_model()
@@ -109,3 +111,52 @@ class PostFormTests(TestCase):
         self.assertIn('reason', form.errors)
         self.assertIn('impressions', form.errors)
         self.assertIn('satisfaction', form.errors)
+
+class CommentFormTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.post_user = User.objects.create_user(
+            email="post_user@test.com",
+            password="test0000"
+        )
+        cls.comment_user = User.objects.create_user(
+            email="comment_user@test.com",
+            password="test0000"
+        )
+        cls.post = Post.objects.create(
+            user=cls.post_user,
+            post_title="post_title",
+            reason="reason",
+            impressions="impressions",
+            satisfaction=5,
+            book_title="book_title",
+            author="author",
+            isbn="0000000000000",
+        )
+
+    def test_78_form_validation_valid_data(self):
+        """
+        フォームの有効性を確認
+        """
+        form_data = {
+            'user': self.comment_user,
+            'comment': 'test_author',
+            'post': self.post_user,
+        }
+        form = CommentForm(data=form_data)
+        self.assertTrue(form.is_valid())
+
+    def test_79_comment_field_raise_error_because_none_value(self):
+        """
+        commentフィールドにおいて、未入力でpostした場合に未入力エラーになるか確認
+        """
+        form_data = {
+            'user': self.comment_user,
+            'comment': '',
+            'post': self.post_user,
+        }
+
+        form = CommentForm(data=form_data)
+        self.assertFalse(form.is_valid())
+
+        self.assertIn('comment', form.errors)

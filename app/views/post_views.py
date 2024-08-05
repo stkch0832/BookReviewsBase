@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from django.views.generic import View
 from django.views.generic.list import ListView
@@ -12,6 +13,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .api_views import get_api_data
 from app.models.post_models import Post
 from app.forms.post_forms import PostForm
+from app.models.comment_models import Comment
+from app.forms.comment_forms import CommentForm
 
 
 class PostListView(ListView):
@@ -78,9 +81,24 @@ class PostDetailView(DetailView):
             'reviewCount': reviewCount,
         }
 
+        comment_list = Comment.objects.filter(post_id=kwargs['pk']).order_by('-created_at')
+        page = request.GET.get('page', 1)
+        paginator = Paginator(comment_list, 5)
+
+        try:
+            comment_data = paginator.page(page)
+        except PageNotAnInteger:
+            comment_data = paginator.page(1)
+        except EmptyPage:
+            comment_data = paginator.page(paginator.num_pages)
+
+        comment_form = CommentForm()
+
         return render(request, 'app/post_detail.html', context={
             'post_data': post_data,
             'book_data': book_data,
+            'comment_data': comment_data,
+            'comment_form': comment_form
         })
 
     def get_queryset(self):

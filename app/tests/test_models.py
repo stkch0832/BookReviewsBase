@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from app.models.post_models import Post
 from django.core.exceptions import ValidationError
+from app.models.comment_models import Comment
 
 User = get_user_model()
 
@@ -199,3 +200,76 @@ class PostModelTests(TestCase):
         self.assertEqual(post_data.book_title, update_book_title)
         self.assertEqual(post_data.author, update_author)
         self.assertEqual(post_data.isbn, update_isbn)
+
+class CommentModelTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.post_user = User.objects.create_user(
+            email="post_user@test.com",
+            password="test0000"
+        )
+        cls.comment_user = User.objects.create_user(
+            email="comment_user@test.com",
+            password="test0000"
+        )
+        cls.post = Post.objects.create(
+            user=cls.post_user,
+            post_title="post_title",
+            reason="reason",
+            impressions="impressions",
+            satisfaction=5,
+            book_title="book_title",
+            author="author",
+            isbn="0000000000000",
+        )
+
+    def test_75_initial_state_is_empty(self):
+        """
+        初期状態において、登録データがないことを確認
+        """
+        comment_obj = Comment.objects.all()
+        self.assertEqual(comment_obj.count(), 0)
+
+    def test_76_comment_object_creation(self):
+        """
+        1レコードを新規作成して保存動作を確認
+        """
+        comment_data = Comment(
+            user = self.comment_user,
+            comment = "test comment",
+            post = self.post,
+        )
+        comment_data.save()
+
+        comment_data.refresh_from_db()
+        comment_obj = Comment.objects.all()
+        self.assertEqual(comment_obj.count(), 1)
+
+        comment_data = Comment.objects.get(id=1)
+        self.assertEqual(comment_data.user_id, self.comment_user.pk)
+        self.assertEqual(comment_data.comment, "test comment")
+        self.assertEqual(comment_data.post_id, self.post.pk)
+        self.assertTrue(comment_data.created_at)
+
+    def test_77_comment_field_validation(self):
+        """
+        commentフィールドのmax_lengthのバリデーションを確認
+        """
+
+        failure_comment = "x" * 256
+        success_comment = "x" * 255
+
+        comment_data = Comment(
+            user = self.comment_user,
+            comment = failure_comment,
+            post = self.post,
+        )
+
+        with self.assertRaises(ValidationError):
+            comment_data.full_clean()
+
+        comment_data.comment = success_comment
+        try:
+            comment_data.full_clean()
+        except ValidationError:
+            self.fail('"comment: 正常値" のバリデーションに異常な挙動が発生')
