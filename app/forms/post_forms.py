@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from app.models.post_models import Post
-# from django.core import validators
 
 
 User = get_user_model()

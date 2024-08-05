@@ -34,6 +34,7 @@ class ProfileForm(forms.ModelForm):
     introduction = forms.CharField(
         max_length=255,
         label='自己紹介',
+        required=False,
         widget=forms.Textarea(),
         help_text =['255文字以内']
     )

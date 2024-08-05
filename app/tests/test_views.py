@@ -6,6 +6,8 @@ from django.contrib.auth import get_user_model
 from app.models.post_models import Post
 from django.utils import timezone
 from django.contrib.messages import get_messages
+from app.models.comment_models import Comment
+
 
 User = get_user_model()
 
@@ -199,6 +201,20 @@ class PostDetailViewTests(TestCase):
             updated_at=timezone.now()
         )
 
+        cls.comment_user = User.objects.create_user(
+            email='comment_user@test.com',
+            password='testpassword'
+            )
+
+        number_of_comments = 13
+        for comment_num in range(number_of_comments):
+            Comment.objects.create(
+                user=cls.user,
+                comment=f'Test comment {comment_num}',
+                post=cls.post,
+                created_at=timezone.now(),
+            )
+
 
     def test_52_check_url_statusCode_and_template_when_access_view(self):
         """
@@ -268,6 +284,94 @@ class PostDetailViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('post_data', response.context)
         self.assertEqual(response.context['post_data'], self.post)
+
+    @patch('app.views.post_views.get_api_data')
+    def test_87_get_comment_object(self, mock_get_api_data):
+        """
+        Postオブジェクトに紐付いたcommentが抽出されているかを確認
+        """
+        mock_get_api_data.return_value = [{
+            'Item': {
+                'title': 'Sample Title',
+                'largeImageUrl': 'http://example.com/image.jpg',
+                'author': 'Sample Author',
+                'salesDate': '2020-01-01',
+                'publisherName': 'Sample Publisher',
+                'isbn': '1234567890123',
+                'itemCaption': 'Sample Caption',
+                'itemUrl': 'http://example.com',
+                'reviewAverage': '4.5',
+                'reviewCount': '10'
+            }
+        }]
+
+        response = self.client.get(reverse('app:post_detail', args=[self.post.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('comment_data', response.context)
+        comment = response.context['comment_data'][0]
+        self.assertEqual(comment.post.pk, self.post.pk)
+
+    @patch('app.views.post_views.get_api_data')
+    def test_88_get_comment_object_pagination(self, mock_get_api_data):
+        """
+        ページネーションにより、各ページに表示される件数を確認
+        FYI: number_of_comments = 13
+        """
+        mock_get_api_data.return_value = [{
+            'Item': {
+                'title': 'Sample Title',
+                'largeImageUrl': 'http://example.com/image.jpg',
+                'author': 'Sample Author',
+                'salesDate': '2020-01-01',
+                'publisherName': 'Sample Publisher',
+                'isbn': '1234567890123',
+                'itemCaption': 'Sample Caption',
+                'itemUrl': 'http://example.com',
+                'reviewAverage': '4.5',
+                'reviewCount': '10'
+            }
+        }]
+
+        # 最初のページ
+        response = self.client.get(reverse('app:post_detail', args=[self.post.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['comment_data']), 5)
+
+
+        # 2ページ目
+        response = self.client.get(reverse('app:post_detail', args=[self.post.pk]) + '?page=2')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['comment_data']), 5)
+
+        # 3ページ目（最後のページ）
+        response = self.client.get(reverse('app:post_detail', args=[self.post.pk]) + '?page=3')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['comment_data']), 3)
+
+    @patch('app.views.post_views.get_api_data')
+    def test_89_get_comment_object_pagination_invalid_page(self, mock_get_api_data):
+        """
+        範囲外のページが指定された場合、最後のページに移動するか確認
+        """
+        mock_get_api_data.return_value = [{
+            'Item': {
+                'title': 'Sample Title',
+                'largeImageUrl': 'http://example.com/image.jpg',
+                'author': 'Sample Author',
+                'salesDate': '2020-01-01',
+                'publisherName': 'Sample Publisher',
+                'isbn': '1234567890123',
+                'itemCaption': 'Sample Caption',
+                'itemUrl': 'http://example.com',
+                'reviewAverage': '4.5',
+                'reviewCount': '10'
+            }
+        }]
+
+        response = self.client.get(reverse('app:post_detail', args=[self.post.pk]) + '?page=999')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['comment_data']), 3)
+        self.assertEqual(response.context['comment_data'].number, 3)
 
 class PostCreateViewTests(TestCase):
     @classmethod
@@ -634,3 +738,187 @@ class MyPostListViewTests(TestCase):
         """
         response = self.client.get(self.url)
         self.assertRedirects(response, f"{reverse('accounts:accounts_login')}?next={self.url}")
+
+class CommentCreateViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.post_user = User.objects.create_user(
+            email="post_user@test.com",
+            password="test0000"
+        )
+        cls.comment_user = User.objects.create_user(
+            email="comment_user@test.com",
+            password="test0000"
+        )
+        cls.post = Post.objects.create(
+            user=cls.post_user,
+            post_title="post_title",
+            reason="reason",
+            impressions="impressions",
+            satisfaction=5,
+            book_title="book_title",
+            author="author",
+            isbn="0000000000000",
+        )
+    def test_80_get_method_not_logged_in_user(self):
+        """
+        getメソッドにて、ログインしていないユーザーにおいて、アクセスを確認
+        """
+        self.client.logout()
+
+        response = self.client.get(reverse('app:comment_new', args=[self.post.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, f"{reverse('accounts:accounts_login')}?next=/bookreviewsbase/posts/{self.post.pk}/comment/")
+
+    def test_81_get_method_logged_in_user(self):
+        """
+        getメソッドにて、ログインユーザーにおいて、アクセスを確認
+        """
+        self.client.login(
+            email="comment_user@test.com",
+            password="test0000"
+            )
+
+        response = self.client.get(reverse('app:comment_new', args=[self.post.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('app:post_detail', kwargs={'pk': self.post.pk}))
+
+    def test_82_post_method_request_form_success(self):
+        """
+        有効なフォームにおいて、リクエストされた場合を確認
+        """
+        self.client.login(
+            email="comment_user@test.com",
+            password="test0000"
+            )
+        comment_data = {
+            'user': self.comment_user,
+            'comment': 'Test comment',
+            'post': self.post_user,
+        }
+        response = self.client.post(reverse('app:comment_new', args=[self.post.pk]), data=comment_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('app:post_detail', kwargs={'pk': self.post.pk}))
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'コメントを投稿しました。')
+
+    def test_83_post_method_request_invalid_form(self):
+        """
+        無効なフォームにおいて、リクエストされた場合を確認
+        """
+        self.client.login(
+            email="comment_user@test.com",
+            password="test0000"
+            )
+        comment_data = {
+            'user': '',
+            'comment': '',
+            'post': '',
+        }
+
+        response = self.client.post(reverse('app:comment_new', args=[self.post.pk]), data=comment_data)
+        self.assertEqual(response.status_code, 302)
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'コメントの投稿に失敗しました。')
+
+
+class CommentDeleteViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.post_user = User.objects.create_user(
+            email="post_user@test.com",
+            password="test0000"
+        )
+        cls.comment_user = User.objects.create_user(
+            email="comment_user@test.com",
+            password="test0000"
+        )
+        cls.others_user = User.objects.create_user(
+            email="others_user@test.com",
+            password="test0000"
+        )
+        cls.post = Post.objects.create(
+            user=cls.post_user,
+            post_title="post_title",
+            reason="reason",
+            impressions="impressions",
+            satisfaction=5,
+            book_title="book_title",
+            author="author",
+            isbn="0000000000000",
+        )
+        cls.comment = Comment.objects.create(
+            user=cls.comment_user,
+            comment='Test comment',
+            post=cls.post,
+        )
+
+    def test_84_request_logged_in_user_and_owner(self):
+        """
+        ログインした投稿ユーザーにおいて、削除がリクエストされた場合を確認
+        """
+        self.client.login(
+            email="comment_user@test.com",
+            password="test0000"
+            )
+
+        response = self.client.post(reverse(
+            'app:comment_delete',
+            args=[self.post.pk, self.comment.pk]
+            ))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse(
+            'app:post_detail',
+            kwargs={'pk': self.post.pk}
+            ))
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'コメントを削除しました。')
+
+    def test_85_request_logged_in_others_user(self):
+        """
+        ログインした他のユーザーにおいて、削除がリクエストされた場合を確認
+        """
+        self.client.login(
+            email="others_user@test.com",
+            password="test0000"
+            )
+
+        response = self.client.post(reverse(
+            'app:comment_delete',
+            args=[self.post.pk, self.comment.pk]
+            ))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse(
+            'app:post_detail',
+            kwargs={'pk': self.post.pk}
+            ))
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'このコメントを削除する権限がありません。')
+
+    def test_86_request_not_logged_in_others_user(self):
+        """
+        ログインしていないユーザーにおいて、削除がリクエストされた場合を確認
+        """
+        self.client.logout()
+
+        response = self.client.post(reverse(
+            'app:comment_delete',
+            args=[self.post.pk, self.comment.pk]
+            ))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse(
+            'app:post_detail',
+            kwargs={'pk': self.post.pk}
+            ))
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'このコメントを削除する権限がありません。')

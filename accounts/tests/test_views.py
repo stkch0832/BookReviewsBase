@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from accounts.models.profile_models import Profile
 from config import settings
 from allauth.account.models import EmailAddress
-from datetime import date, timedelta
+from datetime import date
 import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
@@ -16,9 +16,6 @@ User = get_user_model()
 signup_url = reverse('accounts:accounts_signup')
 login_url = reverse('accounts:accounts_login')
 login_redirect_url = settings.LOGIN_REDIRECT_URL
-
-profile_detail_url = reverse('accounts:profile_detail')
-profile_update_url = reverse('accounts:profile_edit')
 
 
 class SignupViewTests(TestCase):
@@ -86,228 +83,170 @@ class LoginViewTests(TestCase):
         self.assertTemplateUsed(response, 'index.html')
 
 class ProfileDetailViewTests(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = User.objects.create_user(
-            email="test@test.com",
-            password="test0000"
-        )
-
-        cls.profile = Profile.objects.get(user=cls.user)
-        cls.profile.user=cls.user
-        cls.profile.username="inital_username"
-        cls.profile.name="inital_name"
-        cls.profile.introduction="inital_text"
-        cls.profile.bio=1
-        cls.profile.birth=date(2000, 1, 1)
-        cls.profile.workplace=1
-        cls.profile.occapation=1
-        cls.profile.industry=1
-        cls.profile.position=1
-        cls.profile.save()
-
-    def test_24_access_profile_detail_view_logged_in(self):
-        """
-        ログイン状態でのstatus_codeおよびtemplateの確認
-        """
-        self.client.login(
+    def setUp(self):
+        self.user = User.objects.create_user(
             email='test@test.com',
-            password='test0000'
-        )
+            password='password'
+            )
+        self.profile = Profile.objects.get(user=self.user)
+        self.profile.username = 'test_user'
+        self.profile.save()
 
-        response = self.client.get(profile_detail_url)
+        for i in range(13):
+            Post.objects.create(
+                user=self.user,
+                post_title=f'no.{i}_Post',
+                reason='reason',
+                impressions='impressions',
+                satisfaction=5,
+                book_title='book_title',
+                author='author',
+                isbn='1234567890123'
+            )
+
+    def test_24_profile_detail_view_status_code_template_and_context(self):
+        """
+        存在するデータにアクセスした場合、status_code, template, contextの確認
+        """
+        response = self.client.get(
+            reverse('accounts:profile_detail', kwargs={'username': self.profile.username})
+            )
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'account/profile.html')
-        self.assertContains(response, self.profile.username)
+        self.assertTemplateUsed(response, 'account/profile_detail.html')
 
-    def test_25_access_profile_detail_view_logged_out(self):
+        self.assertIn('profile', response.context)
+        self.assertIn('posts', response.context)
+        self.assertIn('page_obj', response.context)
+
+    def test_25_profile_detail_view_profile_not_exist(self):
         """
-        ログアウト状態でのstatus_codeおよびtemplateの確認
+        存在しないデータにアクセスした場合、404エラーが発生するか確認
         """
-        response = self.client.get(profile_detail_url)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/accounts/login/?next=/accounts/profile/')
-        response = self.client.get('/accounts/login/?next=/accounts/profile/')
-        self.assertTemplateUsed(response, 'account/login.html')
+        non_username='dummy_name'
+        response = self.client.get(
+            reverse('accounts:profile_detail', kwargs={'username': non_username})
+            )
+        self.assertEqual(response.status_code, 404)
+
+    def test_73_profile_detail_view_pagination(self):
+        """
+        ページネーションの設定確認
+        """
+        response = self.client.get(
+            reverse('accounts:profile_detail', kwargs={'username': self.profile.username})
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['page_obj']), 5)
+
+        response = self.client.get(
+            reverse('accounts:profile_detail', kwargs={'username': self.profile.username}) + '?page=2'
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['page_obj']), 5)
+
+        response = self.client.get(
+            reverse('accounts:profile_detail', kwargs={'username': self.profile.username}) + '?page=3'
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['page_obj']), 3)
+
+    def test_74_profile_detail_view_pagination_invalid_page(self):
+        """
+        範囲外のページが指定された場合、最後のページに移動するか確認
+        """
+        response = self.client.get(
+            reverse('accounts:profile_detail', kwargs={'username': self.profile.username}) + '?page=999'
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['page_obj']), 3)
+        self.assertEqual(response.context['page_obj'].number, 3)
+
 
 class ProfileUpdateViewTests(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = User.objects.create_user(
-            email="test@test.com",
-            password="test0000"
-        )
 
-        cls.profile = Profile.objects.get(user=cls.user)
-        cls.profile.user=cls.user
-        cls.profile.username="inital_username"
-        cls.profile.name="inital_name"
-        cls.profile.introduction="inital_text"
-        cls.profile.bio=1
-        cls.profile.birth=date(2000, 1, 1)
-        cls.profile.workplace=1
-        cls.profile.occapation=1
-        cls.profile.industry=1
-        cls.profile.position=1
-        cls.profile.save()
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='test@test.com',
+            password='test0000'
+            )
+        self.profile = Profile.objects.get(user_id=self.user.id)
+        self.profile.username='test_user'
+        self.profile.name='Test User'
+        self.profile.introduction='Test introduction.'
+        self.profile.bio=1
+        self.profile.birth=date(2000, 1, 1,)
+        self.profile.workplace=1
+        self.profile.occapation=1
+        self.profile.industry=1
+        self.profile.position=1
+        self.profile.image='test_image.jpg'
+        self.profile.save()
 
-    def test_26_access_profile_update_view_logged_in(self):
+    def test_26_request_get_method_if_not_logged_in_user(self):
         """
-        ログイン状態でのstatus_codeおよびtemplateの確認
+        getメソッドにて、ログインしていないユーザーがアクセスした場合の確認
+        """
+        self.client.logout()
+        response = self.client.get(reverse('accounts:profile_edit'))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/accounts/profile/edit/')
+
+    def test_27_request_get_method_by_user_response_status_code_temolate_and_form_inital(self):
+        """
+        getメソッドにて、ユーザーが正常にアクセスした場合、status_code, template, form_initialの確認
         """
         self.client.login(
             email='test@test.com',
             password='test0000'
-        )
-
-        response = self.client.get(profile_update_url)
+            )
+        response = self.client.get(reverse('accounts:profile_edit'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'account/profile.html')
+        self.assertTemplateUsed(response, 'account/profile_form.html')
 
-    def test_27_profile_update_view_post_method(self):
+        form = response.context['form']
+        self.assertEqual(form.initial['username'], 'test_user')
+        self.assertEqual(form.initial['name'], 'Test User')
+
+    def test_28_request_post_method_profile_update(self):
         """
-        postメソッドにより、データ内容が更新されているかを確認
+        postメソッドにて、正常にデータ更新されているかを確認
         """
         self.client.login(
             email='test@test.com',
             password='test0000'
-        )
+            )
 
         with tempfile.NamedTemporaryFile(suffix=".jpg") as temp_image:
             image = Image.new('RGB', (100, 100), color='red')
             image.save(temp_image, format='JPEG')
             temp_image.seek(0)
-            update_image = SimpleUploadedFile(
+            new_image = SimpleUploadedFile(
                 temp_image.name, temp_image.read(), content_type='image/jpeg'
             )
 
-        updated_data = {
-                'username': 'updated_username',
-                'name': 'updated_name',
-                'introduction': 'updated_text',
-                'image': update_image,
-                'bio': 2,
-                'birth': date(2010, 1, 1),
-                'workplace': 2,
-                'occapation': 2,
-                'industry': 2,
-                'position': 2,
-            }
-
         response = self.client.post(
-            profile_update_url,
-            updated_data,
-            follow=True
-            )
-
-        self.assertRedirects(response, profile_detail_url)
-
+            reverse('accounts:profile_edit'), {
+            'username': 'new_user',
+            'name': 'New User',
+            'introduction': 'New introduction.',
+            'bio': 2,
+            'birth': date(2010, 1, 1),
+            'workplace': 2,
+            'occapation': 2,
+            'industry': 2,
+            'position': 2,
+            'image': new_image
+        })
         self.profile.refresh_from_db()
-        self.assertEqual(self.profile.username, 'updated_username')
-        self.assertEqual(self.profile.name, 'updated_name')
-        self.assertEqual(self.profile.introduction, 'updated_text')
-        self.assertTrue(self.profile.image.name.endswith('.jpg'))
-        self.assertEqual(self.profile.bio, 2)
-        self.assertEqual(self.profile.birth, date(2010, 1, 1))
-        self.assertEqual(self.profile.workplace, 2)
-        self.assertEqual(self.profile.occapation, 2)
-        self.assertEqual(self.profile.industry, 2)
-        self.assertEqual(self.profile.position, 2)
-
-        if self.profile.image:
-            self.profile.image.delete()
-
-    def test_28_profile_update_view_customized_form_valid_and_form_invalid(self):
-        """
-        カスタマイズしたform_validおよびform_invalidを確認
-        """
-        self.client.login(
-            email='test@test.com',
-            password='test0000'
-        )
-
-        profile = Profile.objects.get(user=self.user)
-
-        # form_valid = True
-        valid_data = {
-            'username': 'correct_username',
-            'name': self.profile.name,
-            'introduction': self.profile.introduction,
-            'bio': self.profile.bio,
-            'birth': self.profile.birth,
-            'workplace': self.profile.workplace,
-            'occapation': self.profile.occapation,
-            'industry': self.profile.industry,
-            'position': self.profile.position,
-            }
-
-        response = self.client.post(profile_update_url, valid_data)
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, profile_detail_url)
-
-        self.profile.refresh_from_db()
-        self.assertEqual(self.profile.username, 'correct_username')
+        self.assertEqual(self.profile.username, 'new_user')
+        self.assertEqual(self.profile.name, 'New User')
+        self.assertEqual(self.profile.introduction, 'New introduction.')
+        self.assertRedirects(response, reverse('accounts:profile_edit'))
 
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(messages[0].tags, 'alert alert-success')
-        self.assertEqual(messages[0].message, "プロフィールを更新しました")
-
-        # form_valid = False
-        # username
-        invalid_data = {
-            'username': 'InSpace username',
-            'name': self.profile.name,
-            'introduction': self.profile.introduction,
-            'bio': self.profile.bio,
-            'birth': self.profile.birth,
-            'workplace': self.profile.workplace,
-            'occapation': self.profile.occapation,
-            'industry': self.profile.industry,
-            'position': self.profile.position,
-            }
-
-        response = self.client.post(profile_update_url, invalid_data)
-        self.assertEqual(response.status_code, 200)
-
-        form = response.context['form']
-        self.assertFalse(form.is_valid())
-        self.assertIn('username', form.errors)
-        self.assertEqual(form.errors['username'], ['半角英字(小文字・大文字)、数字、アンダースコア(_)を組み合わせて作成してください。'])
-
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(messages[0].tags, 'alert alert-danger')
-        self.assertEqual(messages[0].message, "プロフィールの更新に失敗しました")
-
-        # birth
-        future_day = date.today() + timedelta(days=365)
-
-        invalid_data = {
-            'username': self.profile.username,
-            'name': self.profile.name,
-            'introduction': self.profile.introduction,
-            'bio': self.profile.bio,
-            'birth': future_day,
-            'workplace': self.profile.workplace,
-            'occapation': self.profile.occapation,
-            'industry': self.profile.industry,
-            'position': self.profile.position,
-            }
-
-        response = self.client.post(profile_update_url, invalid_data)
-        self.assertEqual(response.status_code, 200)
-
-        form = response.context['form']
-        self.assertFalse(form.is_valid())
-        self.assertIn('birth', form.errors)
-        self.assertEqual(form.errors['birth'], ['正しい生年月日を入力してください。'])
-
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(messages[0].tags, 'alert alert-danger')
-        self.assertEqual(messages[0].message, "プロフィールの更新に失敗しました")
-
+        self.assertEqual(messages[0].message, 'プロフィールを変更しました。')
 
 class AccountDeleteViewTests(TestCase):
     def setUp(self):
@@ -352,7 +291,7 @@ class AccountDeleteViewTests(TestCase):
         with self.assertRaises(Post.DoesNotExist):
             Post.objects.get(user=self.user)
 
-    def test_72_logged_in_user_delete_account_failed(self):
+    def test_72_not_logged_in_user_delete_account_failed(self):
         """
         ログインをしていないユーザーにて、アクセスした場合
         """

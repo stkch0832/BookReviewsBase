@@ -7,6 +7,10 @@ from app.views.post_views import (
     PostDeleteView,
     MyPostListView,
 )
+from app.views.comment_views import (
+    CommentCreateView,
+    CommentDeleteView,
+)
 from app.views.book_views import (
     BookSearchView,
 )
@@ -21,6 +25,8 @@ urlpatterns = [
     path('posts/new/<str:isbn>/', PostCreateView.as_view(), name='post_new'),
     path('posts/', MyPostListView.as_view(), name='post_mine'),
 
+    path('posts/<int:pk>/comment/', CommentCreateView.as_view(), name='comment_new'),
+    path('posts/<int:pk>/comment/<int:comment_id>/delete/', CommentDeleteView.as_view(), name='comment_delete'),
 
     path('book/search/', BookSearchView.as_view(), name='book_search'),
 

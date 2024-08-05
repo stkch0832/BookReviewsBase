@@ -1,30 +1,47 @@
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from django.views.generic import DetailView
-from django.views.generic.edit import (
-    FormMixin,
-    UpdateView,
-)
+from django.views.generic.edit import UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ValidationError
+from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 
 from django.contrib.auth import get_user_model
 from accounts.models.profile_models import Profile
 from accounts.forms.profile_forms import ProfileForm
+from app.models.post_models import Post
+from django.core.paginator import Paginator
 
 User = get_user_model()
 
+def custom_404(request, exception):
+    return render(request, '404.html', status=404)
 
-class ProfileDetailView(LoginRequiredMixin, FormMixin, DetailView):
+
+class ProfileDetailView(DetailView):
+
+        def get(self, request, *args, **kwargs):
+            profile = get_object_or_404(Profile, username=kwargs['username'])
+            posts = Post.objects.filter(user_id=profile.user_id).order_by('updated_at')
+
+            paginator = Paginator(posts, 5)
+            page_number = request.GET.get("page")
+            page_obj = paginator.get_page(page_number)
+
+            return render(request, 'account/profile_detail.html', context={
+                'profile': profile,
+                'posts': posts,
+                'page_obj': page_obj
+            })
+
+class ProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Profile
     form_class = ProfileForm
     context_object_name = 'profile'
-    template_name = 'account/profile.html'
+    template_name = 'account/profile_form.html'
 
     def get_object(self, queryset=None):
-        return Profile.objects.get(user_id=self.request.user)
-
+        return Profile.objects.get(user_id=self.request.user.id )
 
     def get_initial(self):
         profile = Profile.objects.get(user_id=self.request.user.id)
@@ -50,25 +67,6 @@ class ProfileDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context['profile'] = self.get_object()
         return context
 
-
-class ProfileUpdateView(LoginRequiredMixin, UpdateView):
-    model = Profile
-    form_class = ProfileForm
-    template_name = 'account/profile.html'
-    success_url = reverse_lazy('accounts:profile_detail')
-
-    def get_object(self):
-        return Profile.objects.get(user_id=self.request.user)
-
-    def form_valid(self, form):
-        try:
-            self.object = form.save()
-            messages.success(self.request, "プロフィールを更新しました")
-            return redirect(self.success_url)
-        except ValidationError as e:
-            form.add_error('username' ,'birth', e)
-            return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, "プロフィールの更新に失敗しました")
-        return super().form_invalid(form)
+    def get_success_url(self):
+        messages.success(self.request, 'プロフィールを変更しました。')
+        return reverse('accounts:profile_edit')

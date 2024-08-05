@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 
 from django.contrib.auth import get_user_model
 from .models.profile_models import Profile
-
+from django.contrib.auth.models import Group
 
 class ProfileInline(admin.StackedInline):
     model = Profile
@@ -55,3 +55,5 @@ class UserModelAdmin(UserAdmin):
         return super(UserModelAdmin, self).get_inline_instances(request, obj)
 
 admin.site.register(get_user_model(), UserModelAdmin)
+
+admin.site.unregister(Group)
