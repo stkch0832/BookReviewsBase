@@ -52,7 +52,7 @@ class PostForm(forms.ModelForm):
 
         self.fields['post_title'].widget.attrs['placeholder'] = '25文字以内'
         self.fields['reason'].widget.attrs['placeholder'] = '25文字以内'
-        self.fields['impressions'].widget.attrs['placeholder'] = '25文字以内'
+        self.fields['impressions'].widget.attrs['placeholder'] = '255文字以内'
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control mb-3'

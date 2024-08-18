@@ -8,90 +8,191 @@
 
 {% block content %}
 
-<h2>投稿詳細</h2>
-{% if post_data.user == request.user %}
-<form action="{% url 'app:post_delete' post_data.pk %}" method="post">
-    {% csrf_token %}
-    <a href="{% url 'app:post_edit' post_data.pk %}" class="btn btn-primary">編集</a>
-    <button type="submit" class="btn btn-danger" onclick="return confirm('この投稿を削除してもよろしいでしょうか？')">削除</button>
-</form>
-{% endif %}
+<div class="mb-3">
+    <h2>投稿詳細</h2>
 </div>
 
-
-<p>{{ post_data.book_title }}</p>
-<p>{{ post_data.post_title }}</p>
-<p>{{ post_data.reason }}</p>
-<p>{{ post_data.impressions }}</p>
-<p>{{ post_data.satisfaction }}</p>
-
-
-<div class="d-flex">
-    <div class="">
-        {% if post_data.user != request.user %}
-        {% endif %}
-        <button type="button" class="btn btn-success" data-bs-toggle="modal"
-            data-bs-target="#openModal">本の情報を見る</button>
-        <a href="{% url 'accounts:profile_detail' post_data.user.profile.username %}"
-            class="btn btn-primary">投稿者プロフィール</a>
-        <a href="{% url 'app:post_list' %}" class="btn btn-secondary">ホームに戻る</a>
+<div class="mb-5">
+    <div class="row text-end mb-3">
+        <div>
+            {% if post_data.user != request.user %}
+            {% endif %}
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#openModal">
+                本の情報を見る
+            </button>
+            <a href="{% url 'accounts:profile_detail' post_data.user.profile.username %}" class="btn btn-success">
+                投稿者プロフィール
+            </a>
+            <a href="{% url 'app:post_list' %}" class="btn btn-secondary">
+                ホームに戻る
+            </a>
+        </div>
     </div>
-</div>
 
 
-<div class="modal" tabindex="-1" id="openModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">本の情報</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="border mb-3 p-5">
+        <div class=" border-bottom mb-3 border-bottom mb-3">
+            <span class="fw-bold">本のタイトル:</span>
+            <p>{{ post_data.book_title | linebreaksbr }}</p>
+        </div>
+        <div class=" border-bottom mb-3">
+            <span class="fw-bold">タイトル:</span>
+            <p>{{ post_data.post_title }}</p>
+        </div>
+        <div class=" border-bottom mb-3">
+            <span class="fw-bold">動機・目的:</span>
+            <p>{{ post_data.reason }}</p>
+        </div>
+        <div class=" border-bottom mb-3">
+            <span class="fw-bold">満足度:</span>
+            <p>
+                {% for i in satisfaction_range %}
+                {% if i < satisfaction_int %} <span class="text-warning">★</span>
+                    {% else %}
+                    <span class="text-secondary">★</span>
+                    {% endif %}
+                    {% endfor %}
+            </p>
+        </div>
+        <div class=" border-bottom mb-3">
+            <span class="fw-bold">所感:</span>
+            <p>{{ post_data.impressions | linebreaksbr }}</p>
+        </div>
+
+        {% if post_data.user == request.user %}
+        <div class="row text-end">
+            <div>
+                <form action="{% url 'app:post_delete' post_data.pk %}" method="post">
+                    {% csrf_token %}
+                    <a href="{% url 'app:post_edit' post_data.pk %}" class="btn btn-primary">編集</a>
+                    <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('この投稿を削除してもよろしいでしょうか？')">削除</button>
+                </form>
             </div>
-            <div class="modal-body">
-                <img src="{{ book_data.image }}" alt="">
-                <p>{{ book_data.title }}</p>
-                <p>{{ book_data.author }}</p>
-                <p>{{ book_data.salesDate }}</p>
-                <p>{{ book_data.publisherName }}</p>
-                <p>{{ book_data.size }}</p>
-                <p>{{ book_data.itemCaption }}</p>
+        </div>
+        {% endif %}
+    </div>
 
-                <p>{{ book_data.reviewAverage }}</p>
-                <p>{{ book_data.reviewCount }}</p>
-                <a href="{{ book_data.itemUrl }}" target="_blank">販売ページを開く</a>
+
+    <div class="modal" tabindex="-1" id="openModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">本の情報</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="text-center">
+                        <img src="{{ book_data.image }}" alt="{{ book_data.title }}のイメージ画像">
+                    </div>
+                    <div class="row">
+                        <span class="fw-bold">タイトル:</span>
+                        <p>{{ book_data.title | linebreaksbr }}</p>
+                    </div>
+                    <div class="row">
+                        <span class="fw-bold">著者名:</span>
+                        <p>{{ book_data.author }}</p>
+                    </div>
+                    <div class="row">
+                        <span class="fw-bold">発売日:</span>
+                        <p>{{ book_data.salesDate }}</p>
+                    </div>
+                    <div class="row">
+                        <span class="fw-bold">出版社:</span>
+                        <p>{{ book_data.publisherName }}</p>
+                    </div>
+                    <div class="row">
+                        <span class="fw-bold">説明:</span>
+                        <p>{{ book_data.itemCaption }}</p>
+                    </div>
+                    <div class="row">
+                        <span class="fw-bold">レビュー平均:</span>
+                        {% if not book_data.reviewCount == 0 %}
+                        <p><span class="text-danger">{{ book_data.reviewAverage }}</span></p>
+                        {% else %}
+                        <p>まだレビューはありません。</p>
+                        {% endif %}
+                    </div>
+                    <div class="row">
+                        <span class="fw-bold">レビュー件数:</span>
+                        {% if not book_data.reviewCount == 0 %}
+                        <p>{{ book_data.reviewCount }} 件</p>
+                        {% else %}
+                        <p>まだレビューはありません。</p>
+                        {% endif %}
+                    </div>
+                    <div class="text-end">
+                        <a href="{{ book_data.itemUrl }}" target="_blank" class="btn btn-outline-primary">販売ページを開く</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 
-<div class="">
-    <h3 class="mb-3">コメント</h3>
+<div class="mb-3">
+    <h2>コメント</h2>
+</div>
+
+<div class="mb-5">
     {% if comment_data %}
-    <div class="">
-        {% for comment in comment_data %}
-        {% if comment.user.profile.image %}
-        <img src="{{ comment.user.profile.image.url }}" alt="" style="width: 100px; height: 100px">
-        {% else %}
-        <img src="{% static 'accounts/user_image/default_image.jpeg' %}" alt="" style="width: 100px; height: 100px">
-        {% endif %}
-        <p>
-            <a href="{% url 'accounts:profile_detail' comment.user.profile.username %}">
-                {{ comment.user.profile.name }}さん
-            </a>
-            {{ comment.created_at }}<br>
-            {{ comment.comment }}
-        </p>
-        {% if comment.user_id == request.user.id %}
-        <form method="POST" action="{% url 'app:comment_delete' pk=post_data.pk comment_id=comment.pk %}">
-            {% csrf_token %}
-            <button class="btn btn-outline-danger" type="submit" onclick='return confirm("本当に削除しますか？");'>削除</button>
-        </form>
-        {% endif %}
-        <hr>
-        {% endfor %}
-    </div>
+    <table class="table">
+        <thead>
+            <tr class="row">
+                <th class="col-2 text-center">ユーザー</th>
+                <th class="col-6 text-center">コメント</th>
+                <th class="col-2 text-center">投稿日時</th>
+                <th class="col-2 text-center">リンク</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comment in comment_data %}
+            <tr class="row border-bottom-1">
+                <td class="col-2 text-center">
+                    <div class="my-2">
+                        {% if comment.user.profile.image %}
+                        <img src="{{ comment.user.profile.image.url }}" class="card-img-top" alt="アイコン画像"
+                            style="width: 100px; height: 100px">
+                        {% else %}
+                        <img src="{% static 'accounts/user_image/default_image.jpeg' %}" class="card-img-top" alt="デフォルトアイコン画像"
+                            style="width: 100px; height: 100px">
+                        {% endif %}
+                    </div>
+                    <div class="my-2">
+                        {{ comment.user.profile.name }}
+                    </div>
+                </td>
+                <td class="col-6 d-flex align-items-center px-5" style="word-break: break-all;">
+                    {{ comment.comment }}
+                </td>
+                <td class="col-2 d-flex align-items-center justify-content-center">
+                    {{ comment.created_at}}
+                </td>
+                <td class="col-2 text-center justify-content-center">
+                    <div class="d-grid w-50 mx-auto my-5">
+                        <a href="{% url 'accounts:profile_detail' comment.user.profile.username %}"
+                            class="btn btn-outline-primary">プロフィール</a>
+                    </div>
+                    {% if comment.user_id == request.user.id %}
+                    <div class="d-grid w-50 mx-auto mb-5">
+                        <form method="POST"
+                            action="{% url 'app:comment_delete' pk=post_data.pk comment_id=comment.pk %}">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-danger" type="submit"
+                                onclick='return confirm("本当に削除しますか？");'>削除</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-
+<div class="mb-5">
     <nav aria-label="Page navigation">
         {% if comment_data.has_other_pages %}
         <ul class="pagination justify-content-center">
@@ -102,7 +203,8 @@
             {% endif %}
 
             {% if comment_data.number|add:'-2' > 1 %}
-            <li class="page-item"><a class="page-link" href="?page={{ comment_data.number|add:'-2' }}">&hellip;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ comment_data.number|add:'-2' }}">&hellip;</a>
+            </li>
             {% endif %}
 
             {% for i in comment_data.paginator.page_range %}
@@ -133,25 +235,25 @@
     {% else %}
     <p>コメントはありません。</p>
     {% endif %}
-
-
-    <div class="">
-        {% if request.user.is_authenticated and not post_data.user_id == request.user.id %}
-        <form method="POST" action="{% url 'app:comment_new' post_data.pk %}">
-            {% csrf_token %}
-            {% if field.errors %}
-            <div class="error">
-                {% for error in field.errors %}
-                <p class="text-danger">※{{ error }}</p>
-                {% endfor %}
-            </div>
-            {% endif %}
-            {{ comment_form.as_p }}
-            <button type="submit" class="btn btn-outline-success">送信</button>
-        </form>
-        {% endif %}
-    </div>
 </div>
+
+<div class="mb-5">
+    {% if request.user.is_authenticated and not post_data.user_id == request.user.id %}
+    <form method="POST" action="{% url 'app:comment_new' post_data.pk %}">
+        {% csrf_token %}
+        {% if field.errors %}
+        <div class="error">
+            {% for error in field.errors %}
+            <p class="text-danger">※{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {{ comment_form.as_p }}
+        <div class="text-end">
+            <button type="submit" class="btn btn-outline-success">送信</button>
+    </form>
+</div>
+{% endif %}
 
 
 {% endblock %}
