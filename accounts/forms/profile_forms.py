@@ -17,8 +17,7 @@ class ProfileForm(forms.ModelForm):
         label='ユーザーID',
         required=True,
         help_text =[
-            '5～30文字以内',
-            '半角英字(小文字・大文字)、数字、アンダースコア(_)のみ使用可能',
+            '5～30文字以内、半角英字(小文字・大文字)、数字、アンダースコア(_)のみ使用可能',
             ]
         )
 

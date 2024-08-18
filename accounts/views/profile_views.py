@@ -22,7 +22,11 @@ class ProfileDetailView(DetailView):
 
         def get(self, request, *args, **kwargs):
             profile = get_object_or_404(Profile, username=kwargs['username'])
-            posts = Post.objects.filter(user_id=profile.user_id).order_by('updated_at')
+            posts = Post.objects.filter(user_id=profile.user_id).order_by('-created_at')
+
+            for post in posts:
+                post.satisfaction_int = int(post.satisfaction)
+                print(post.satisfaction_int)
 
             paginator = Paginator(posts, 5)
             page_number = request.GET.get("page")
@@ -31,6 +35,7 @@ class ProfileDetailView(DetailView):
             return render(request, 'account/profile_detail.html', context={
                 'profile': profile,
                 'posts': posts,
+                'satisfaction_range': range(5),
                 'page_obj': page_obj
             })
 

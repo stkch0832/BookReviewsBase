@@ -3,17 +3,14 @@
 {% load static %}
 
 {% block title %}
-プロフィール
+プロフィール変更
 {% endblock %}
 
 {% block content %}
 
-<h2>プロフィール</h2>
-{% if profile.image %}
-<img src="{{ profile.image.url }}" alt="" style="width: 100px; height: 100px">
-{% else %}
-<img src="{% static 'accounts/user_image/default_image.jpeg' %}" alt="" style="width: 100px; height: 100px">
-{% endif %}
+<div class="mb-3">
+    <h2>プロフィール変更</h2>
+</div>
 
 <form action="{% url 'accounts:profile_edit' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -28,44 +25,53 @@
     {% endif %}
 
     {% for field in form %}
-        {% if field.name != 'image' %}
-            <div>
-                <label for="{{ field.id_for_label }}">
-                    {{ field.label }}:
-                </label><br>
-                {% if field.help_text %}
-                {% for help_text in field.help_text %}
-                <span>※{{ help_text }}</span><br>
-                {% endfor %}
-                {% endif %}
-                {{ field }}
-                {% if field.errors %}
-                <div class="error">
-                    {% for error in field.errors %}
-                    <p class="text-danger">※{{ error }}</p>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-        {% else %}
-        <div>
-            <label for="{{ field.id_for_label }}">{{ field.label }}:</label><br>
-            <input type="file" name="{{ field.name }}" class="form-control mb-3" id="{{ field.id_for_label }}">
-            {% if field.errors %}
-            <div class="error">
-                {% for error in field.errors %}
-                <p class="text-danger">※{{ error }}</p>
-                {% endfor %}
-            </div>
-            {% endif %}
+    {% if field.name != 'image' %}
+    <div>
+        <label for="{{ field.id_for_label }}">
+            {{ field.label }}:
+        </label><br>
+        {% if field.help_text %}
+        {% for help_text in field.help_text %}
+        <span>※{{ help_text }}</span><br>
+        {% endfor %}
+        {% endif %}
+        {{ field }}
+        {% if field.errors %}
+        <div class="error">
+            {% for error in field.errors %}
+            <p class="text-danger">※{{ error }}</p>
+            {% endfor %}
         </div>
         {% endif %}
+    </div>
+    {% else %}
+    <div>
+        <label for="{{ field.id_for_label }}">{{ field.label }}:</label><br>
+        <input type="file" name="{{ field.name }}" class="form-control mb-3" id="{{ field.id_for_label }}">
+        {% if field.errors %}
+        <div class="error">
+            {% for error in field.errors %}
+            <p class="text-danger">※{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
     {% endfor %}
 
+    <div class="mb-3">
+        <p>現在のアイコン画像: </p>
+        {% if profile.image %}
+        <img src="{{ profile.image.url }}" alt="アイコン画像" style="width: 100px; height: 100px">
+        {% else %}
+        <img src="{% static 'accounts/user_image/default_image.jpeg' %}" alt="デフォルトアイコン画像" style="width: 100px; height: 100px">
+        {% endif %}
+    </div>
 
-
-    <button type="submit" class="btn btn-primary">更新</button>
-    <a href="{% url 'app:post_list' %}" class="btn btn-secondary">戻る</a>
+    <div class="text-end">
+        <button type="submit" class="btn btn-primary">更新</button>
+        <a href="{% url 'app:post_list' %}" class="btn btn-secondary">戻る</a>
+    </div>
 </form>
 
 {% endblock %}

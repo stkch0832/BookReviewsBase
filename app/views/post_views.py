@@ -28,6 +28,14 @@ class PostListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        posts = context['posts']
+        for post in posts:
+            post.satisfaction = int(post.satisfaction)
+
+        context['posts'] = posts
+        context['satisfaction_range'] = range(5)
+
         return context
 
 
@@ -96,6 +104,8 @@ class PostDetailView(DetailView):
 
         return render(request, 'app/post_detail.html', context={
             'post_data': post_data,
+            'satisfaction_range': range(5),
+            'satisfaction_int': int(post_data.satisfaction),
             'book_data': book_data,
             'comment_data': comment_data,
             'comment_form': comment_form

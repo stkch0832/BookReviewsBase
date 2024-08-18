@@ -5,23 +5,28 @@
 {% endblock %}
 
 {% block content %}
-<h3>{{ search_words }}の検索結果</h3>
+<div class="text-center mb-3">
+    <h2>「{{ search_words }}」の検索結果</h2>
+</div>
 
-<div class="row">
-    {% for book in book_data %}
-
-    <div class="col-4">
-        <div class="card">
-            <img src="{{ book.image }}" alt="{{ book.image }}" class="card-img-top">
+<div>
+    <div class="row">
+        {% for book in book_data %}
+        <div class="col-3 offset-1 mb-4 border rounded">
+            <div class="card mx-auto my-3" style="width: 200px; height: 200px;">
+                <img src="{{ book.image }}" alt="{{ book.title }}" class="card-img-top" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            <div class="card-body" style="height: 50px; word-break: break-all;">
+                <h5 class="card-title">{{ book.title | linebreaksbr |truncatechars_html:30 }}</h5>
+            </div>
+            <div class="card-body text-center my-3">
+                <a href="{% url 'app:post_new' book.isbn %}" class="btn btn-primary">レビューを投稿する</a>
+            </div>
         </div>
-        <div class="card-body">
-            <h5 class="card-title">{{ book.title }}</h5>
-            <a href="{% url 'app:post_new' book.isbn %}" class="btn btn-primary">この本のレビューを投稿する</a>
-        </div>
+        {% empty %}
+        <p class="text-center">該当するものがありません</p>
+        {% endfor %}
     </div>
-    {% empty %}
-    <p>該当するものがありません</p>
-    {% endfor %}
 </div>
 
 
