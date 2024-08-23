@@ -242,6 +242,6 @@ ACCOUNT_FORMS = {
 
 CORS_ALLOWED_ORIGINS = [
     'http://35.77.239.158',
-    'http://http://book-reviews-base.com',
+    'http://book-reviews-base.com',
     'http://localhost:3000',
 ]
