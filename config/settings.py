@@ -91,9 +91,11 @@ INSTALLED_APPS = [
     'allauth.account',
     'django.contrib.sites',
     'django_cleanup',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -237,3 +239,9 @@ ACCOUNT_FORMS = {
     'set_password': 'accounts.forms.user_forms.CustomSetPasswordForm',
     'add_email': 'accounts.forms.user_forms.CustomAddEmailForm',
 }
+
+CORS_ALLOWED_ORIGINS = [
+    'http://35.77.239.158',
+    'http://http://book-reviews-base.com',
+    'http://localhost:3000',
+]
