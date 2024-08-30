@@ -224,10 +224,10 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 2
 
 LOGIN_ON_EMAIL_CONFIRMATION = True
-LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/bookreviewsbase/'
+LOGIN_URL = 'auth/login/'
+LOGIN_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_ON_GET = True
-ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 
 ACCOUNT_FORMS = {
     'signup': 'accounts.forms.user_forms.CustomSignupForm',
@@ -241,7 +241,7 @@ ACCOUNT_FORMS = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    'http://35.77.239.158',
-    'http://book-reviews-base.com',
+    'https://35.77.239.158',
+    'https://book-reviews-base.com',
     'http://localhost:3000',
 ]
