@@ -25,7 +25,7 @@ handler404 = profile_views.custom_404
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
-    path('accounts/', include('allauth.urls')),
+    path('auth/', include('allauth.urls')),
     path('', include('app.urls')),
 
 ]
