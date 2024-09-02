@@ -1,9 +1,12 @@
 {% if messages %}
+<ul id="flashMessages" class="messages list-unstyled">
 {% for message in messages %}
-<ul class="messages list-unstyled">
-    <li{% if message.tags %} class="alert alert-{{ message.tags }} text-center"{% endif %} role="alert">
+    <li{% if message.tags %} class="alert alert-{{ message.tags }} alert-dismissible fade show text-center position-relative mb-0" {% endif %} role="alert">
         {{ message.message }}
+        <button type="button" class="close position-absolute" style="right: 10px; top: 10px;" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true"><i class="bi bi-x-circle fs-5"></i></span>
+        </button>
     </li>
-</ul>
 {% endfor %}
+</ul>
 {% endif %}
